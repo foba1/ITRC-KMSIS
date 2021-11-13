@@ -89,6 +89,7 @@ public class UIManager : MonoBehaviour
             int clock = hour * 60 + minute;
             timePanel.transform.GetChild(3).GetComponent<Slider>().value = clock;
         }
+        UpdateRecentPanel();
     }
 
     // Open request correction link
@@ -292,6 +293,44 @@ public class UIManager : MonoBehaviour
             advertisementPanel.transform.GetChild(0).GetChild(0).GetChild(2).GetComponent<Text>().text = "0%";
             int value = Random.Range(0, adSprite.Length);
             advertisementPanel.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = adSprite[value];
+        }
+    }
+
+    // Search with recent
+    public void SearchRecent(int index)
+    {
+        List<string> recentSearch = dataManager.GetRecentSearch();
+        searchInput.text = recentSearch[index];
+        Search();
+    }
+
+    // Delete recent Search
+    public void DeleteRecentSearch(int index)
+    {
+        dataManager.DeleteRecenrSearch(index);
+    }
+
+    // Update recentPanel
+    public void UpdateRecentPanel()
+    {
+        List<string> recentSearch = dataManager.GetRecentSearch();
+        List<string> recentSearchDay = dataManager.GetRecentSearchDay();
+        for (int i = 0; i < 3; i++)
+        {
+            if (i < recentSearch.Count)
+            {
+                recentPanel.transform.GetChild(i + 2).gameObject.SetActive(true);
+                recentPanel.transform.GetChild(i + 5).gameObject.SetActive(true);
+                recentPanel.transform.GetChild(i + 8).gameObject.SetActive(true);
+                recentPanel.transform.GetChild(i + 2).GetComponent<Text>().text = recentSearch[i];
+                recentPanel.transform.GetChild(i + 5).GetComponent<Text>().text = recentSearchDay[i];
+            }
+            else
+            {
+                recentPanel.transform.GetChild(i + 2).gameObject.SetActive(false);
+                recentPanel.transform.GetChild(i + 5).gameObject.SetActive(false);
+                recentPanel.transform.GetChild(i + 8).gameObject.SetActive(false);
+            }
         }
     }
 
@@ -1025,6 +1064,7 @@ public class UIManager : MonoBehaviour
     public void Search()
     {
         List<GameObject> tempList = dataManager.SearchWithText(searchInput.text);
+        dataManager.AddSearchRecord(searchInput.text);
         if (tempList == null || tempList.Count == 0) Debug.Log("검색 결과가 없습니다.");
         else
         {

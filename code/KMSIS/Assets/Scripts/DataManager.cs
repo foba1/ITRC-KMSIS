@@ -395,7 +395,7 @@ public class DataManager : MonoBehaviour
     public class ExtraData
     {
         [SerializeField]
-        private List<string> addressList, startDayList, endDayList, averageList, maxList;
+        private List<string> addressList, startDayList, endDayList, averageList, maxList, searchList, searchDayList;
 
         public ExtraData()
         {
@@ -404,6 +404,8 @@ public class DataManager : MonoBehaviour
             endDayList = new List<string>();
             averageList = new List<string>();
             maxList = new List<string>();
+            searchList = new List<string>();
+            searchDayList = new List<string>();
         }
 
         public void AddRecord(string address, string startDay, string endDay, string average, string max)
@@ -430,6 +432,63 @@ public class DataManager : MonoBehaviour
         {
             return addressList.Count;
         }
+
+        public void AddSearchRecord(string search)
+        {
+            if (!searchList.Contains(search))
+            {
+                searchList.Add(search);
+                searchDayList.Add(System.DateTime.Now.ToString("MM") + ". " + System.DateTime.Now.ToString("dd"));
+                if (searchList.Count > 3)
+                {
+                    searchList.RemoveAt(0);
+                    searchDayList.RemoveAt(0);
+                }
+            }
+        }
+
+        public void DeleteSearchRecord(int index)
+        {
+            if (index >= 0 && index <= 2)
+            {
+                searchList.RemoveAt(index);
+                searchDayList.RemoveAt(index);
+            }
+        }
+
+        public List<string> GetSearchList()
+        {
+            return searchList;
+        }
+
+        public List<string> GetSearchDayList()
+        {
+            return searchDayList;
+        }
+    }
+
+    // Add recent search
+    public void AddSearchRecord(string search)
+    {
+        extraData.AddSearchRecord(search);
+    }
+
+    // Delete recent search
+    public void DeleteRecenrSearch(int index)
+    {
+        extraData.DeleteSearchRecord(index);
+    }
+
+    // Get recent search list
+    public List<string> GetRecentSearch()
+    {
+        return extraData.GetSearchList();
+    }
+
+    // Get recent search day list
+    public List<string> GetRecentSearchDay()
+    {
+        return extraData.GetSearchDayList();
     }
 
     // Save record at extraData
