@@ -1,0 +1,664 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using TriLibCore.Samples;
+
+public class ControlManager : MonoBehaviour
+{
+    // This class manages what the user controls.
+
+    // Manager component
+    private RayManager rayManager;
+    private SunManager sunManager;
+    private DataManager dataManager;
+    private BuildingManager buildingManager;
+    private ImportManager importManager;
+    private UIManager uiManager;
+    private AnalysisManager analysisManager;
+
+    // SelectBox component and list of selected objects
+    public RectTransform dragSelectBox;
+
+    // RaycastHit variable
+    private RaycastHit hit;
+
+    // Material component
+    public Material selectMaterial;
+    public Material normalMaterial;
+    public Material pointMaterial;
+
+    // GameObject component
+    private GameObject buildings;
+    private GameObject importedBuildings;
+    private GameObject analysisPoints;
+    private GameObject mainCamera;
+
+    // Local variable and setting
+    private int mode; // -1 : unable, 0 : main, 1 : importing, 2 : analysis
+    private bool analysisMode; // false : drawing mode, true : drag mode
+    private bool areaSetMode;
+    private Vector3 clickPosition;
+    private float rotateLR;
+    private float rotateUD;
+    private float zoomSpeed = 20.0f;
+    private float rotateSpeed = 5.0f;
+    private float moveSpeed = 1.5f;
+    private Vector3 offset;
+    private bool rightClick;
+    private float normalScale;
+
+    void Start()
+    {
+        // Get GameObject component
+        buildings = GameObject.Find("Buildings");
+        importedBuildings = GameObject.Find("ImportedBuildings");
+        analysisPoints = GameObject.Find("AnalysisPoints");
+        mainCamera = GameObject.Find("Main Camera");
+
+        // Get manager component
+        rayManager = GameObject.Find("RayManager").GetComponent<RayManager>();
+        sunManager = GameObject.Find("SunManager").GetComponent<SunManager>();
+        dataManager = GameObject.Find("DataManager").GetComponent<DataManager>();
+        buildingManager = GameObject.Find("BuildingManager").GetComponent<BuildingManager>();
+        importManager = GameObject.Find("ImportManager").GetComponent<ImportManager>();
+        uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+        analysisManager = GameObject.Find("AnalysisManager").GetComponent<AnalysisManager>();
+
+        mode = 0;
+        analysisMode = false;
+        areaSetMode = false;
+        rightClick = false;
+    }
+
+    void Update()
+    {
+        if (mode == 0)
+        {
+            if (Input.GetAxis("Mouse ScrollWheel") * zoomSpeed != 0) // When scroll
+            {
+                // Update zoom of camera
+                mainCamera.GetComponent<Camera>().fieldOfView -= Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
+            }
+
+            if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Horizontal") != 0) // When get A D กๆ ก็
+            {
+                // Update position of camera
+                mainCamera.transform.position += mainCamera.transform.right * Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime;
+                CameraPositionRangeCheck();
+            }
+
+            if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Vertical") != 0) // When get W S ก่ ก้
+            {
+                // Update position of camera
+                mainCamera.transform.position += mainCamera.transform.forward * Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
+                CameraPositionRangeCheck();
+            }
+
+            if (Input.GetMouseButton(1)) // When right click is continue
+            {
+                // Update direction of camera
+                mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.R))
+            {
+                ResetCamera();
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.O))
+            {
+                importManager.ImportFromBrowser();
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.Q))
+            {
+                if (buildingManager.GetSelectedBuildingsList().Count < 1)
+                {
+                    Debug.Log("You should choose the building for analysis.");
+                }
+                else if (buildingManager.GetSelectedBuildingsList().Count == 1)
+                {
+                    uiManager.TurnOnUI(1);
+                }
+                else
+                {
+                    Debug.Log("You can choose only one building.");
+                }
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.D))
+            {
+                for (int i = 0; i < buildingManager.GetSelectedBuildingsList().Count; i++)
+                {
+                    buildingManager.GetDeletedBuildingsList().Add(buildingManager.GetSelectedBuildingsList()[i]);
+                    buildingManager.GetSelectedBuildingsList()[i].SetActive(false);
+                }
+                buildingManager.ClearSelectedBuildingsList();
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.X))
+            {
+                buildingManager.GetDeletedBuildingsList().Clear();
+                buildingManager.ShowAll();
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.C))
+            {
+                buildingManager.ChangeView();
+            }
+
+            if (Input.GetKeyUp(KeyCode.V))
+            {
+                dataManager.Save();
+            }
+
+            if (Input.GetMouseButtonDown(0)) // When left click is start
+            {
+                // Record position
+                clickPosition = Input.mousePosition;
+            }
+
+            if (Input.GetMouseButton(0)) // When left click is continue
+            {
+                // Update SelectBox
+                if (!uiManager.IsMouseOnUI(Input.mousePosition) && !uiManager.GetSliderState())
+                {
+                    UpdateDragSelectBox(Input.mousePosition);
+                }
+                if (uiManager.GetSliderState())
+                {
+                    if (dragSelectBox.gameObject.activeInHierarchy)
+                    {
+                        dragSelectBox.gameObject.SetActive(false);
+                    }
+                }
+            }
+
+            if (Input.GetMouseButtonUp(0)) // When left click is end
+            {
+                if (uiManager.IsMouseOnUI(Input.mousePosition))
+                {
+                    dragSelectBox.gameObject.SetActive(false);
+                }
+                else
+                {
+                    // Check if building is exist on click position
+                    Ray ray = mainCamera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) // When get ctrl
+                        {
+                            if (hit.collider.gameObject.name != "Dem" && hit.collider.gameObject.name != "Colliders") // When didn't click outside
+                            {
+                                // Check if object is already selected
+                                bool isSelected = false;
+                                for (int i = 0; i < buildingManager.GetSelectedBuildingsList().Count; i++)
+                                {
+                                    if (hit.collider.gameObject.name == buildingManager.GetSelectedBuildingsList()[i].name)// When object is already selected
+                                    {
+                                        isSelected = true;
+                                        buildingManager.DeleteFromSelectedBuildingsList(i);
+                                        break;
+                                    }
+                                }
+                                if (!isSelected) // When object isn't selected
+                                {
+                                    // select object
+                                    buildingManager.SelectBuilding(hit.collider.gameObject);
+                                }
+                            }
+                        }
+                        else // When click without ctrl
+                        {
+                            // Clear selection list
+                            buildingManager.ClearSelectedBuildingsList();
+                            if (hit.collider.gameObject.name != "Dem" && hit.collider.gameObject.name != "Colliders") // When didn't click outside
+                            {
+                                // select object
+                                buildingManager.SelectBuilding(hit.collider.gameObject);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        buildingManager.ClearSelectedBuildingsList();
+                    }
+
+                    if (Vector3.Distance(clickPosition, Input.mousePosition) < 2f)
+                    {
+                        dragSelectBox.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        ReleaseDragSelectBox();
+                    }
+                }
+            }
+        }
+        else if (mode == 1)
+        {
+            if (Input.GetAxis("Mouse ScrollWheel") * zoomSpeed != 0) // When scroll
+            {
+                // Update y position of camera
+                mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y - Input.GetAxis("Mouse ScrollWheel"), mainCamera.transform.position.z);
+                CameraPositionRangeCheck();
+            }
+
+            if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Horizontal") != 0) // When get A D กๆ ก็
+            {
+                // Update position of camera
+                mainCamera.transform.position += mainCamera.transform.right * Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime;
+                CameraPositionRangeCheck();
+            }
+
+            if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Vertical") != 0) // When get W S ก่ ก้
+            {
+                // Update position of camera
+                mainCamera.transform.position += mainCamera.transform.up * Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
+                CameraPositionRangeCheck();
+            }
+
+            if (!rightClick)
+            {
+                if (Input.GetMouseButtonDown(0)) // When left click is start
+                {
+                    // Record position
+                    clickPosition = Input.mousePosition;
+
+                    // Check if user click imported object
+                    Ray ray = mainCamera.GetComponent<Camera>().ScreenPointToRay(clickPosition);
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (importedBuildings.transform.childCount > 0 && hit.transform.gameObject == importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject)
+                        {
+                            hit.transform.gameObject.GetComponent<MeshRenderer>().material = selectMaterial;
+                            hit.transform.gameObject.tag = "Selected";
+                            offset = mainCamera.GetComponent<Camera>().WorldToScreenPoint(hit.transform.position) - Input.mousePosition;
+                        }
+                    }
+                }
+
+                if (Input.GetMouseButton(0)) // When left click is continue
+                {
+                    if (importedBuildings.transform.childCount > 0 && importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.tag == "Selected")
+                    {
+                        Vector3 temp = mainCamera.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition + offset);
+                        importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).transform.position = new Vector3(temp.x, 0.5f, temp.z);
+                    }
+                }
+
+                if (Input.GetMouseButtonUp(0)) // When left click is end
+                {
+                    if (importedBuildings.transform.childCount > 0 && importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.tag == "Selected")
+                    {
+                        importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.tag = "Untagged";
+                        importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.GetComponent<MeshRenderer>().material = normalMaterial;
+                        importManager.DeleteLevitation(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject);
+                    }
+                }
+
+                if (Input.GetMouseButtonUp(1)) // When right click is end
+                {
+                    // Record position
+                    clickPosition = Input.mousePosition;
+
+                    // Check if user click imported object
+                    Ray ray = mainCamera.GetComponent<Camera>().ScreenPointToRay(clickPosition);
+                    if (Physics.Raycast(ray, out hit))
+                    {
+                        if (importedBuildings.transform.childCount > 0 && hit.transform.gameObject == importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject)
+                        {
+                            hit.transform.gameObject.GetComponent<MeshRenderer>().material = selectMaterial;
+                            hit.transform.gameObject.tag = "Selected";
+                            offset = mainCamera.GetComponent<Camera>().WorldToScreenPoint(hit.transform.position) - Input.mousePosition;
+                            rightClick = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (importedBuildings.transform.childCount > 0 && importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.tag == "Selected")
+                {
+                    Vector3 temp = mainCamera.GetComponent<Camera>().ScreenToWorldPoint(Input.mousePosition + offset);
+                    importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).position = new Vector3(temp.x, 0.5f, temp.z);
+                }
+
+                if (Input.GetMouseButtonUp(1)) // When right click is end
+                {
+                    if (importedBuildings.transform.childCount > 0 && importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.tag == "Selected")
+                    {
+                        importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.tag = "Untagged";
+                        importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.GetComponent<MeshRenderer>().material = normalMaterial;
+                        importManager.DeleteLevitation(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject);
+                        rightClick = false;
+                    }
+                }
+            }
+
+            if (Input.GetKeyUp(KeyCode.Return)) // When get enter
+            {
+                ImportConfirm();
+            }
+        }
+        else if (mode == 2)
+        {
+            if (Input.GetAxis("Mouse ScrollWheel") * zoomSpeed != 0) // When scroll
+            {
+                // Update zoom of camera
+                mainCamera.GetComponent<Camera>().fieldOfView -= Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
+            }
+
+            if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Horizontal") != 0) // When get A D กๆ ก็
+            {
+                // Update position of camera
+                mainCamera.transform.position += mainCamera.transform.right * Input.GetAxis("Horizontal") * moveSpeed * Time.deltaTime;
+                CameraPositionRangeCheck();
+            }
+
+            if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Vertical") != 0) // When get W S ก่ ก้
+            {
+                // Update position of camera
+                mainCamera.transform.position += mainCamera.transform.forward * Input.GetAxis("Vertical") * moveSpeed * Time.deltaTime;
+                CameraPositionRangeCheck();
+            }
+
+            if (Input.GetMouseButton(1)) // When right click is continue
+            {
+                // Update direction of camera
+                mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.R))
+            {
+                ResetCamera();
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.C))
+            {
+                if (!analysisMode) analysisMode = true;
+                else if (analysisMode) analysisMode = false;
+            }
+
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.Q))
+            {
+                SetMode(0);
+                analysisManager.Release();
+            }
+
+            if (Input.GetMouseButtonDown(0)) // When left click is start
+            {
+                // Record position
+                clickPosition = Input.mousePosition;
+
+                if (!analysisMode && areaSetMode)
+                {
+                    if (!uiManager.IsMouseOnUI(clickPosition))
+                    {
+                        // Check if point is exist on click position
+                        Ray ray = mainCamera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
+                        if (Physics.Raycast(ray, out hit))
+                        {
+                            if (hit.collider.gameObject.name != "Dem" && hit.collider.gameObject.name != "Colliders") // When didn't click outside
+                            {
+                                analysisManager.SelectPoint(hit.collider.gameObject);
+                            }
+                            else
+                            {
+                                analysisManager.ClearSelectedObjectList();
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (Input.GetMouseButton(0)) // When left click is continue
+            {
+                if (!analysisMode && areaSetMode)
+                {
+                    if (clickPosition != Input.mousePosition && !uiManager.IsMouseOnUI(clickPosition))
+                    {
+                        // Check if point is exist on click position
+                        Ray ray = mainCamera.GetComponent<Camera>().ScreenPointToRay(Input.mousePosition);
+                        if (Physics.Raycast(ray, out hit))
+                        {
+                            if (hit.collider.gameObject.name != "Dem" && hit.collider.gameObject.name != "Colliders") // When didn't click outside
+                            {
+                                analysisManager.SelectPoint(hit.collider.gameObject);
+                            }
+                        }
+                    }
+                }
+                else if (analysisMode && areaSetMode)
+                {
+                    // Update SelectBox
+                    UpdateDragSelectBox(Input.mousePosition);
+                }
+            }
+
+            if (Input.GetMouseButtonUp(0)) // When left click is end
+            {
+                if (analysisMode && areaSetMode)
+                {
+                    if (uiManager.IsMouseOnUI(clickPosition) || Vector3.Distance(clickPosition, Input.mousePosition) < 2f)
+                    {
+                        dragSelectBox.gameObject.SetActive(false);
+                    }
+                    else
+                    {
+                        ReleaseDragSelectBoxForAnalysis();
+                    }
+                }
+            }
+        }
+    }
+
+    // Update areaSetMode
+    public void UpdateAreaSetMode()
+    {
+        if (areaSetMode) areaSetMode = false;
+        else areaSetMode = true;
+    }
+
+    // Import confirm
+    public void ImportConfirm()
+    {
+        if (importedBuildings.transform.childCount > 0 && importManager.CheckSizeOfModel(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject))
+        {
+            SetMode(0);
+            uiManager.TurnOffUI(-1);
+        }
+        else
+        {
+            Debug.Log("3D Model is too big.");
+        }
+    }
+
+    // Import cancel
+    public void ImportCancel()
+    {
+        if (importedBuildings.transform.childCount > 0)
+        {
+            buildingManager.GetDeletedBuildingsList().Add(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject);
+            importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.SetActive(false);
+            SetMode(0);
+            uiManager.TurnOffUI(-1);
+        }
+    }
+
+    // Reset camera
+    private void ResetCamera()
+    {
+        mainCamera.transform.position = new Vector3(0.5806503f, 1.184541f, 4.311463f);
+        mainCamera.transform.eulerAngles = new Vector3(16.365f, 161.884f, 0f);
+    }
+
+    // Set normal scale
+    public void SetNormalScale(float value)
+    {
+        normalScale = value;
+    }
+
+    // Set scale of imported building
+    public void SetScale(float x, float y, float z)
+    {
+        if (mode == 1 && importedBuildings.transform.childCount != 0)
+        {
+            importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).localScale = normalScale * new Vector3(x, y, z);
+        }
+    }
+
+    // Set rotation of imported building
+    public void SetRotation(float x, float y, float z)
+    {
+        if (mode == 1 && importedBuildings.transform.childCount != 0)
+        {
+            importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).eulerAngles = new Vector3(x, y, z);
+        }
+    }
+
+    // Set mode
+    public void SetMode(int value)
+    {
+        mode = value;
+    }
+
+    // Limit the range of camera
+    private void CameraPositionRangeCheck()
+    {
+        if (mainCamera.transform.position.y < 0.5f)
+        {
+            mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, 0.5f, mainCamera.transform.position.z);
+        }
+        if (mainCamera.transform.position.y > 7f)
+        {
+            mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, 7f, mainCamera.transform.position.z);
+        }
+        if (mainCamera.transform.position.z < -10f)
+        {
+            mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, -10f);
+        }
+        if (mainCamera.transform.position.z > 12f)
+        {
+            mainCamera.transform.position = new Vector3(mainCamera.transform.position.x, mainCamera.transform.position.y, 12f);
+        }
+        if (mainCamera.transform.position.x < -13f)
+        {
+            mainCamera.transform.position = new Vector3(-13f, mainCamera.transform.position.y, mainCamera.transform.position.z);
+        }
+        if (mainCamera.transform.position.x > 20f)
+        {
+            mainCamera.transform.position = new Vector3(20f, mainCamera.transform.position.y, mainCamera.transform.position.z);
+        }
+    }
+
+    // Update selectBox with mouse position
+    private void UpdateDragSelectBox(Vector2 currentMousePosition)
+    {
+        if (!dragSelectBox.gameObject.activeInHierarchy)
+        {
+            dragSelectBox.gameObject.SetActive(true);
+        }
+
+        float width = currentMousePosition.x - clickPosition.x;
+        float height = currentMousePosition.y - clickPosition.y;
+
+        dragSelectBox.sizeDelta = new Vector2(Mathf.Abs(width), Mathf.Abs(height));
+        Vector2 temp = clickPosition;
+        dragSelectBox.anchoredPosition = temp + new Vector2(width / 2, height / 2);
+    }
+
+    // Release selectBox
+    private void ReleaseDragSelectBox()
+    {
+        dragSelectBox.gameObject.SetActive(false);
+
+        // calculate the range of position
+        Vector2 min = dragSelectBox.anchoredPosition - (dragSelectBox.sizeDelta / 2);
+        Vector2 max = dragSelectBox.anchoredPosition + (dragSelectBox.sizeDelta / 2);
+
+        List<Vector2> pointList = new List<Vector2>();
+        List<int> objectIndexList = new List<int>();
+
+        for (int i = 0; i < buildings.transform.childCount; i++)
+        {
+            // Check if position of building is in the selectBox
+            Vector2 screenPosition = mainCamera.GetComponent<Camera>().WorldToScreenPoint(buildings.transform.GetChild(i).position);
+            if (screenPosition.x > min.x && screenPosition.x < max.x && screenPosition.y > min.y && screenPosition.y < max.y)
+            {
+                pointList.Add(screenPosition);
+                objectIndexList.Add(i);
+            }
+        }
+
+        if (!Input.GetKey(KeyCode.LeftControl) & !Input.GetKey(KeyCode.RightControl)) // When didn't get ctrl
+        {
+            buildingManager.ClearSelectedBuildingsList();
+        }
+
+        for (int i = 0; i < importedBuildings.transform.childCount; i++)
+        {
+            // Check if position of building is in the selectBox
+            Vector2 screenPosition = mainCamera.GetComponent<Camera>().WorldToScreenPoint(importedBuildings.transform.GetChild(i).position);
+            if (screenPosition.x > min.x && screenPosition.x < max.x && screenPosition.y > min.y && screenPosition.y < max.y)
+            {
+                buildingManager.SelectBuilding(importedBuildings.transform.GetChild(i).gameObject);
+            }
+        }
+
+        // Check if camera can detect the building
+        for (int i = 0; i < pointList.Count; i++)
+        {
+            Ray ray = mainCamera.GetComponent<Camera>().ScreenPointToRay(pointList[i]);
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.gameObject.name == buildings.transform.GetChild(objectIndexList[i]).gameObject.name)
+                {
+                    buildingManager.SelectBuilding(hit.collider.gameObject);
+                }
+            }
+        }
+    }
+
+    // Release selectBox for analysis
+    private void ReleaseDragSelectBoxForAnalysis()
+    {
+        dragSelectBox.gameObject.SetActive(false);
+
+        // calculate the range of position
+        Vector2 min = dragSelectBox.anchoredPosition - (dragSelectBox.sizeDelta / 2);
+        Vector2 max = dragSelectBox.anchoredPosition + (dragSelectBox.sizeDelta / 2);
+
+        List<Vector2> pointList = new List<Vector2>();
+        List<int> objectIndexList = new List<int>();
+
+        for (int i = 0; i < analysisPoints.transform.childCount; i++)
+        {
+            // Check if position of the point is in the selectBox
+            Vector2 screenPosition = mainCamera.GetComponent<Camera>().WorldToScreenPoint(analysisPoints.transform.GetChild(i).position);
+            if (screenPosition.x > min.x && screenPosition.x < max.x && screenPosition.y > min.y && screenPosition.y < max.y)
+            {
+                pointList.Add(screenPosition);
+                objectIndexList.Add(i);
+            }
+        }
+
+        if (!Input.GetKey(KeyCode.LeftControl) & !Input.GetKey(KeyCode.RightControl)) // When didn't get ctrl
+        {
+            analysisManager.ClearSelectedObjectList();
+        }
+
+        // Check if camera can detect the point
+        for (int i = 0; i < pointList.Count; i++)
+        {
+            Ray ray = mainCamera.GetComponent<Camera>().ScreenPointToRay(pointList[i]);
+            if (Physics.Raycast(ray, out hit))
+            {
+                if (hit.collider.gameObject.name == analysisPoints.transform.GetChild(objectIndexList[i]).gameObject.name)
+                {
+                    analysisManager.SelectObject(hit.collider.gameObject);
+                }
+            }
+        }
+    }
+}
