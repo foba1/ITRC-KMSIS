@@ -23,6 +23,9 @@ namespace TriLibCore.Samples
 		private GameObject standardBoundBuilding;
 		private GameObject colliders;
 
+		// Model
+		public GameObject[] prefabBuildings;
+
 		// Variable
 		private float minBound;
 		private Vector3 eulerAngles;
@@ -111,6 +114,33 @@ namespace TriLibCore.Samples
 			assetLoaderOptions.ImportMeshes = true;
 			assetLoaderOptions.GenerateColliders = true;
 			AssetLoader.LoadModelFromFile(path, OnLoad, null, null, null, importedBuildings, assetLoaderOptions);
+		}
+
+		// Import model using prefab
+		public void ImportFromPrefab(int index)
+        {
+			controlManager.SetMode(1);
+			eulerAngles = Camera.main.transform.eulerAngles;
+			Camera.main.transform.eulerAngles = new Vector3(90f, Camera.main.transform.eulerAngles.y, 0f);
+			GameObject temp = Instantiate(prefabBuildings[index], new Vector3(0, 0, 0), Quaternion.identity);
+			temp.transform.SetParent(importedBuildings.transform);
+			SetSizeOfModel(temp);
+			temp.transform.position = new Vector3(Camera.main.transform.position.x, 0.5f, Camera.main.transform.position.z);
+			if (Camera.main.transform.position.y < 2f)
+			{
+				Camera.main.transform.position = new Vector3(Camera.main.transform.position.x, 2f, Camera.main.transform.position.z);
+			}
+			controlManager.SetNormalScale(temp.transform.localScale.x);
+			DeleteLevitation(temp);
+			for (int i = 0; i < importedBuildings.transform.childCount; i++)
+			{
+				if (importedBuildings.transform.GetChild(i).gameObject == temp)
+				{
+					dataManager.LoadBuildingState(i);
+					break;
+				}
+			}
+			uiManager.LoadInfo(temp);
 		}
 
 		// Import model using file browser

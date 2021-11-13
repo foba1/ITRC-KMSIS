@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Threading;
+using TriLibCore.Samples;
 
 public class UIManager : MonoBehaviour
 {
@@ -38,6 +39,7 @@ public class UIManager : MonoBehaviour
     private BuildingManager buildingManager;
     private ControlManager controlManager;
     private AnalysisManager analysisManager;
+    private ImportManager importManager;
 
     // Time variable
     private int[] dayForMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -62,6 +64,7 @@ public class UIManager : MonoBehaviour
         buildingManager = GameObject.Find("BuildingManager").GetComponent<BuildingManager>();
         controlManager = GameObject.Find("ControlManager").GetComponent<ControlManager>();
         analysisManager = GameObject.Find("AnalysisManager").GetComponent<AnalysisManager>();
+        importManager = GameObject.Find("ImportManager").GetComponent<ImportManager>();
 
         // Set variable
         yearString = System.DateTime.Now.ToString("yyyy");
@@ -107,10 +110,15 @@ public class UIManager : MonoBehaviour
     {
         if (index == -1)
         {
-            for (int i = 0; i < 8; i++)
-            {
-                TurnOffUI(i);
-            }
+            infoPanel.SetActive(false);
+            sunlightPanel.SetActive(false);
+            customPanel.SetActive(false);
+            periodPanel.SetActive(false);
+            analysisPanel.SetActive(false);
+            importPreviewPanel.SetActive(false);
+            importPanel.SetActive(false);
+            savedRecordPanel.SetActive(false);
+            advertisementPanel.SetActive(false);
             for (int i = 0; i < iconPanel.transform.childCount; i++)
             {
                 if (i == 2) continue;
@@ -285,6 +293,13 @@ public class UIManager : MonoBehaviour
             int value = Random.Range(0, adSprite.Length);
             advertisementPanel.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = adSprite[value];
         }
+    }
+
+    // Import from prefab
+    public void ImportFromPrefab()
+    {
+        TurnOffUI(3);
+        importManager.ImportFromPrefab(selectedPrefab);
     }
 
     // Change preview mode

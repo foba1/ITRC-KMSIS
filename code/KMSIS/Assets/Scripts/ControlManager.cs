@@ -521,6 +521,7 @@ public class ControlManager : MonoBehaviour
     public void SetMode(int value)
     {
         mode = value;
+        Debug.Log(mode);
     }
 
     // Limit the range of camera
