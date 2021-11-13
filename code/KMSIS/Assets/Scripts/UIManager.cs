@@ -45,6 +45,11 @@ public class UIManager : MonoBehaviour
     float predictionTime;
     int startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute;
 
+    // Variable related to import
+    private int selectedPrefab;
+    public Sprite[] buildingSprite;
+    private string[] buildingName = { "관공서(A)", "관공서(B)", "관공서(C)", "대형마트(A)", "대형마트(B)", "상가(A)", "아파트(A)", "아파트(B)", "아파트(C)", "아파트(D)", "아파트(E)", "오피스텔(A)", "원룸(A)", "원룸(B)", "주택(A)", "주택(B)", "학교(A)", "학교(B)", "호텔(A)", "호텔(B)", "회사(A)" };
+
     // Slider click state
     bool sliderClicked;
 
@@ -65,6 +70,7 @@ public class UIManager : MonoBehaviour
         minuteString = System.DateTime.Now.ToString("mm");
 
         sliderClicked = false;
+        selectedPrefab = 0;
 
         // Set the position of sun
         SetSunPosition();
@@ -131,6 +137,7 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 3)
         {
+            controlManager.SetMode(0);
             importPreviewPanel.SetActive(false);
             iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(true);
             iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
@@ -145,6 +152,7 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 5)
         {
+            controlManager.SetMode(0);
             for (int i = 0; i < savedRecordPanel.transform.GetChild(0).GetChild(13).GetChild(0).GetChild(1).childCount; i++)
             {
                 GameObject.Destroy(savedRecordPanel.transform.GetChild(0).GetChild(13).GetChild(0).GetChild(1).GetChild(i).gameObject);
@@ -225,10 +233,12 @@ public class UIManager : MonoBehaviour
         else if (index == 3)
         {
             TurnOffUI(-1);
+            controlManager.SetMode(3);
             importPreviewPanel.SetActive(true);
             iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(false);
             iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);
             iconPanel.transform.GetChild(1).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
+            ShowAlbum();
         }
         else if (index == 4)
         {
@@ -241,6 +251,7 @@ public class UIManager : MonoBehaviour
         else if (index == 5)
         {
             TurnOffUI(-1);
+            controlManager.SetMode(3);
             savedRecordPanel.SetActive(true);
             iconPanel.transform.GetChild(3).GetChild(1).gameObject.SetActive(false);
             iconPanel.transform.GetChild(3).GetChild(2).gameObject.SetActive(true);
@@ -265,6 +276,52 @@ public class UIManager : MonoBehaviour
             int value = Random.Range(0, adSprite.Length);
             advertisementPanel.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = adSprite[value];
         }
+    }
+
+    // Update selectedPrefab
+    public void UpdateSeletedPrefab(int index)
+    {
+        if (importPreviewPanel.transform.GetChild(0).GetChild(1).GetChild(0).gameObject.activeSelf)
+        {
+            importPreviewPanel.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(1).GetChild(selectedPrefab).GetChild(0).gameObject.SetActive(false);
+            importPreviewPanel.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(1).GetChild(index).GetChild(0).gameObject.SetActive(true);
+            importPreviewPanel.transform.GetChild(0).GetChild(0).GetComponent<Image>().sprite = buildingSprite[index];
+            importPreviewPanel.transform.GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetComponent<Text>().text = buildingName[index];
+        }
+        else
+        {
+
+        }
+        selectedPrefab = index;
+    }
+
+    // Show album of buildings
+    public void ShowAlbum()
+    {
+        for (int i = 0; i < importPreviewPanel.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(1).childCount; i++)
+        {
+            GameObject.Destroy(importPreviewPanel.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(1).GetChild(i).gameObject);
+        }
+        GameObject item = importPreviewPanel.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(0).gameObject;
+        int yValue = 0;
+        for (int i = 0; i < buildingSprite.Length; i++)
+        {
+            GameObject temp = Instantiate(item, new Vector3(0, yValue, 0), Quaternion.identity);
+            temp.transform.GetChild(0).gameObject.SetActive(false);
+            temp.transform.GetChild(1).GetComponent<Image>().sprite = buildingSprite[i];
+            int temp_i = i;
+            temp.transform.GetChild(2).GetComponent<Button>().onClick.AddListener(delegate () { UpdateSeletedPrefab(temp_i); });
+            temp.transform.SetParent(importPreviewPanel.transform.GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(1));
+            temp.SetActive(true);
+            yValue -= 60;
+        }
+        UpdateSeletedPrefab(0);
+    }
+
+    // Show list of buildings
+    public void ShowList()
+    {
+
     }
 
     // Update analysisPanel
