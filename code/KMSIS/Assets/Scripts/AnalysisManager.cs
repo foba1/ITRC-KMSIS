@@ -31,7 +31,7 @@ public class AnalysisManager : MonoBehaviour
     private int[] dayForMonth = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
     // Variable
-    private float radius = 0.01f;
+    private float radius = 0.005f;
     private int month, day;
     private float clock;
     private List<double> timeInfo;

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using TriLibCore.Samples;
 
 public class ControlManager : MonoBehaviour
@@ -32,6 +33,8 @@ public class ControlManager : MonoBehaviour
     private GameObject importedBuildings;
     private GameObject analysisPoints;
     private GameObject mainCamera;
+    public GameObject cameraRotate;
+    public GameObject cameraZoom;
 
     // Local variable and setting
     private int mode; // -1 : unable, 0 : main, 1 : importing, 2 : analysis
@@ -64,6 +67,7 @@ public class ControlManager : MonoBehaviour
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
         analysisManager = GameObject.Find("AnalysisManager").GetComponent<AnalysisManager>();
 
+        UpdateZoomSlider();
         mode = 0;
         analysisMode = false;
         areaSetMode = false;
@@ -74,11 +78,8 @@ public class ControlManager : MonoBehaviour
     {
         if (mode == 0)
         {
-            if (Input.GetAxis("Mouse ScrollWheel") * zoomSpeed != 0) // When scroll
-            {
-                // Update zoom of camera
-                mainCamera.GetComponent<Camera>().fieldOfView -= Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
-            }
+            RotateCamera();
+            ZoomCamera();
 
             if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Horizontal") != 0) // When get A D ¡æ ¡ç
             {
@@ -343,11 +344,8 @@ public class ControlManager : MonoBehaviour
         }
         else if (mode == 2)
         {
-            if (Input.GetAxis("Mouse ScrollWheel") * zoomSpeed != 0) // When scroll
-            {
-                // Update zoom of camera
-                mainCamera.GetComponent<Camera>().fieldOfView -= Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
-            }
+            RotateCamera();
+            ZoomCamera();
 
             if (!(Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && !uiManager.CheckInputfieldFocused() && Input.GetAxis("Horizontal") != 0) // When get A D ¡æ ¡ç
             {
@@ -453,6 +451,48 @@ public class ControlManager : MonoBehaviour
         }
     }
 
+    // Update zoom slider
+    public void UpdateZoomSlider()
+    {
+        mainCamera.GetComponent<Camera>().fieldOfView = 70f - cameraZoom.transform.GetChild(0).GetChild(0).GetComponent<Slider>().value;
+    }
+
+    // Zoom camera
+    public void ZoomCamera()
+    {
+        if (cameraZoom.transform.GetChild(1).GetComponent<CameraButton>().buttonPressed)
+        {
+            mainCamera.GetComponent<Camera>().fieldOfView -= 0.2f;
+            cameraZoom.transform.GetChild(0).GetChild(0).GetComponent<Slider>().value = 70f - mainCamera.GetComponent<Camera>().fieldOfView;
+        }
+        else if (cameraZoom.transform.GetChild(2).GetComponent<CameraButton>().buttonPressed)
+        {
+            mainCamera.GetComponent<Camera>().fieldOfView += 0.2f;
+            cameraZoom.transform.GetChild(0).GetChild(0).GetComponent<Slider>().value = 70f - mainCamera.GetComponent<Camera>().fieldOfView;
+        }
+    }
+
+    // Rotate camera
+    public void RotateCamera()
+    {
+        if (cameraRotate.transform.GetChild(1).GetComponent<CameraButton>().buttonPressed)
+        {
+            mainCamera.transform.eulerAngles += 0.5f * new Vector3(-1, 0, 0);
+        }
+        else if (cameraRotate.transform.GetChild(2).GetComponent<CameraButton>().buttonPressed)
+        {
+            mainCamera.transform.eulerAngles += 0.5f * new Vector3(1, 0, 0);
+        }
+        else if (cameraRotate.transform.GetChild(3).GetComponent<CameraButton>().buttonPressed)
+        {
+            mainCamera.transform.eulerAngles += 0.5f * new Vector3(0, -1, 0);
+        }
+        else if (cameraRotate.transform.GetChild(4).GetComponent<CameraButton>().buttonPressed)
+        {
+            mainCamera.transform.eulerAngles += 0.5f * new Vector3(0, 1, 0);
+        }
+    }
+
     // Update areaSetMode
     public void UpdateAreaSetMode()
     {
@@ -487,7 +527,7 @@ public class ControlManager : MonoBehaviour
     }
 
     // Reset camera
-    private void ResetCamera()
+    public void ResetCamera()
     {
         mainCamera.transform.position = new Vector3(0.5806503f, 1.184541f, 4.311463f);
         mainCamera.transform.eulerAngles = new Vector3(16.365f, 161.884f, 0f);
@@ -521,7 +561,6 @@ public class ControlManager : MonoBehaviour
     public void SetMode(int value)
     {
         mode = value;
-        Debug.Log(mode);
     }
 
     // Limit the range of camera
