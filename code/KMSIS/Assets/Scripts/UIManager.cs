@@ -19,6 +19,7 @@ public class UIManager : MonoBehaviour
     public GameObject periodPanel;
     public GameObject importPanel;
     public GameObject timePanel;
+    public GameObject advertisementPanel;
     public GameObject importPreviewPanel;
     public GameObject savedRecordPanel;
 
@@ -28,6 +29,8 @@ public class UIManager : MonoBehaviour
     public InputField searchInput;
     public InputField[] scaleInput;
     public InputField[] rotationInput;
+
+    public Sprite[] adSprite;
 
     // Manager component
     private SunManager sunManager;
@@ -89,14 +92,14 @@ public class UIManager : MonoBehaviour
         Application.OpenURL("https://github.com/foba1/ITRC-KMSIS");
     }
 
-    // UI index - infoPanel(0), sunlightPanel(1), customPanel(2), importPreviewPanel(3), importPanel(4), savedRecordPanel(5), periodPanel(6), analysisPanel(7)
+    // UI index - infoPanel(0), sunlightPanel(1), customPanel(2), importPreviewPanel(3), importPanel(4), savedRecordPanel(5), periodPanel(6), analysisPanel(7), advertisementPanel(8)
 
     // Turn off the UI
     public void TurnOffUI(int index)
     {
         if (index == -1)
         {
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 8; i++)
             {
                 TurnOffUI(i);
             }
@@ -159,6 +162,10 @@ public class UIManager : MonoBehaviour
         {
             analysisPanel.SetActive(false);
         }
+        else if (index == 8)
+        {
+            advertisementPanel.SetActive(false);
+        }
     }
 
     // Turn on the UI
@@ -183,28 +190,10 @@ public class UIManager : MonoBehaviour
                 else
                 {
                     TurnOffUI(-1);
-                    sunlightPanel.SetActive(true);
-                    customPanel.SetActive(true);
+                    TurnOnUI(8);
                     controlManager.SetMode(2);
                     analysisManager.Init(buildingManager.GetSelectedBuildingsList()[0]);
-                    List<int> temp = analysisManager.AnalyzeBuilding();
-                    if (temp != null)
-                    {
-                        sunlightPanel.transform.GetChild(1).GetComponent<Text>().text = monthString + "월 " + dayString + "일 평균";
-                        sunlightPanel.transform.GetChild(2).GetComponent<Text>().text = (temp[0] / 60) + "시간 " + (temp[0] % 60) + "분";
-                        sunlightPanel.transform.GetChild(5).GetComponent<Text>().text = monthString + "월 " + dayString + "일 최대";
-                        sunlightPanel.transform.GetChild(6).GetComponent<Text>().text = (temp[1] / 60) + "시간 " + (temp[1] % 60) + "분";
-                    }
-                    else
-                    {
-                        analysisManager.Release();
-                        buildingManager.ClearSelectedBuildingsList();
-                        controlManager.SetMode(0);
-                        TurnOffUI(-1);
-                    }
-                    iconPanel.transform.GetChild(0).GetChild(1).gameObject.SetActive(false);
-                    iconPanel.transform.GetChild(0).GetChild(2).gameObject.SetActive(true);
-                    iconPanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
+                    analysisManager.AnalyzeBuilding();
                 }
             }
         }
@@ -269,51 +258,18 @@ public class UIManager : MonoBehaviour
             analysisPanel.transform.GetChild(6).gameObject.SetActive(true);
             analysisPanel.transform.GetChild(7).gameObject.SetActive(false);
         }
-    }
-
-    // Update area set mode
-    public void UpdateAreaSetMode()
-    {
-        if (customPanel.transform.GetChild(1).GetChild(2).gameObject.activeSelf) customPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
-        else customPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);
-    }
-
-    // Save record of sunlight
-    public void SaveRecord()
-    {
-        GameObject building = analysisManager.targetBuilding;
-        string startDay = analysisPanel.transform.GetChild(0).GetComponent<Text>().text;
-        string endDay = analysisPanel.transform.GetChild(1).GetComponent<Text>().text;
-        string average = analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text;
-        string max = analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text;
-        dataManager.SaveRecord(building, startDay, endDay, average, max);
-        analysisPanel.transform.GetChild(6).gameObject.SetActive(false);
-        analysisPanel.transform.GetChild(7).gameObject.SetActive(true);
-    }
-
-    // Show saved record
-    public void ShowRecord()
-    {
-        GameObject item = savedRecordPanel.transform.GetChild(0).GetChild(13).GetChild(0).GetChild(0).gameObject;
-        int yValue = 0;
-        for (int i = 0; i < dataManager.extraData.GetLength(); i++)
+        else if (index == 8)
         {
-            List<string> record = dataManager.extraData.GetRecord(i);
-            GameObject temp = Instantiate(item, new Vector3(0, yValue, 0), Quaternion.identity);
-            temp.transform.SetParent(savedRecordPanel.transform.GetChild(0).GetChild(13).GetChild(0).GetChild(1));
-            for (int j = 0; j < 5; j++)
-            {
-                temp.transform.GetChild(j + 6).GetComponent<Text>().text = record[j];
-            }
-            temp.SetActive(true);
-            yValue -= 60;
+            advertisementPanel.SetActive(true);
+            advertisementPanel.transform.GetChild(0).GetChild(0).GetChild(2).GetComponent<Text>().text = "0%";
+            int value = Random.Range(0, adSprite.Length);
+            advertisementPanel.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = adSprite[value];
         }
     }
 
-    // Calculate sunlight during the period which user set
-    public void CalculateSunlight()
+    // Update analysisPanel
+    public void UpdateAnalysisPanel(List<int> result)
     {
-        List<int> result = analysisManager.Analyze(startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
         if (result != null)
         {
             TurnOffUI(2);
@@ -365,6 +321,84 @@ public class UIManager : MonoBehaviour
                 }
             }
         }
+        TurnOffUI(8);
+    }
+
+    // Update sunlightPanel
+    public void UpdateSunlightPanel(List<int> result)
+    {
+        sunlightPanel.SetActive(true);
+        customPanel.SetActive(true);
+        if (result != null)
+        {
+            sunlightPanel.transform.GetChild(1).GetComponent<Text>().text = monthString + "월 " + dayString + "일 평균";
+            sunlightPanel.transform.GetChild(2).GetComponent<Text>().text = (result[0] / 60) + "시간 " + (result[0] % 60) + "분";
+            sunlightPanel.transform.GetChild(5).GetComponent<Text>().text = monthString + "월 " + dayString + "일 최대";
+            sunlightPanel.transform.GetChild(6).GetComponent<Text>().text = (result[1] / 60) + "시간 " + (result[1] % 60) + "분";
+        }
+        else
+        {
+            analysisManager.Release();
+            buildingManager.ClearSelectedBuildingsList();
+            controlManager.SetMode(0);
+            TurnOffUI(-1);
+        }
+        iconPanel.transform.GetChild(0).GetChild(1).gameObject.SetActive(false);
+        iconPanel.transform.GetChild(0).GetChild(2).gameObject.SetActive(true);
+        iconPanel.transform.GetChild(0).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
+        TurnOffUI(8);
+    }
+
+    // Update percentage of progress in advertisementPanel
+    public void UpdateProgress(int percentage)
+    {
+        advertisementPanel.transform.GetChild(0).GetChild(0).GetChild(2).GetComponent<Text>().text = percentage.ToString() + "%";
+    }
+
+    // Update area set mode
+    public void UpdateAreaSetMode()
+    {
+        if (customPanel.transform.GetChild(1).GetChild(2).gameObject.activeSelf) customPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
+        else customPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);
+    }
+
+    // Save record of sunlight
+    public void SaveRecord()
+    {
+        GameObject building = analysisManager.targetBuilding;
+        string startDay = analysisPanel.transform.GetChild(0).GetComponent<Text>().text;
+        string endDay = analysisPanel.transform.GetChild(1).GetComponent<Text>().text;
+        string average = analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text;
+        string max = analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text;
+        dataManager.SaveRecord(building, startDay, endDay, average, max);
+        analysisPanel.transform.GetChild(6).gameObject.SetActive(false);
+        analysisPanel.transform.GetChild(7).gameObject.SetActive(true);
+    }
+
+    // Show saved record
+    public void ShowRecord()
+    {
+        GameObject item = savedRecordPanel.transform.GetChild(0).GetChild(13).GetChild(0).GetChild(0).gameObject;
+        int yValue = 0;
+        for (int i = 0; i < dataManager.extraData.GetLength(); i++)
+        {
+            List<string> record = dataManager.extraData.GetRecord(i);
+            GameObject temp = Instantiate(item, new Vector3(0, yValue, 0), Quaternion.identity);
+            temp.transform.SetParent(savedRecordPanel.transform.GetChild(0).GetChild(13).GetChild(0).GetChild(1));
+            for (int j = 0; j < 5; j++)
+            {
+                temp.transform.GetChild(j + 6).GetComponent<Text>().text = record[j];
+            }
+            temp.SetActive(true);
+            yValue -= 60;
+        }
+    }
+
+    // Calculate sunlight during the period which user set
+    public void CalculateSunlight()
+    {
+        TurnOnUI(8);
+        analysisManager.Analyze(startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
     }
 
     // Calculate interval of period
