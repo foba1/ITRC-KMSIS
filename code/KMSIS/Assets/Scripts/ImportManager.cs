@@ -5,6 +5,7 @@ using System.IO;
 using UnityEngine;
 using SimpleFileBrowser;
 using TriLibCore.General;
+using UnityEditor;
 
 namespace TriLibCore.Samples
 {
@@ -107,6 +108,12 @@ namespace TriLibCore.Samples
 			else return false;
 		}
 
+		// Save prefab file
+		public void SavePrefabFile(string fileName, int index)
+		{
+
+		}
+
 		// Import model using path
 		public void ImportFromPath(string path)
         {
@@ -141,6 +148,27 @@ namespace TriLibCore.Samples
 				}
 			}
 			uiManager.LoadInfo(temp);
+			FileInfo file = new FileInfo(Application.persistentDataPath + dataManager.directory2 + "/" + temp.name + ".prefab");
+			if (!file.Exists)
+				File.Copy(Application.dataPath + "/Model/" + index.ToString() + ".prefab", Application.persistentDataPath + dataManager.directory2 + "/" + temp.name + ".prefab");
+		}
+
+		// Import model which is saved in fiile
+		public void ImportSavedPrefab(int index)
+        {
+			GameObject temp = Instantiate(prefabBuildings[index], new Vector3(0, 0, 0), Quaternion.identity);
+			temp.transform.SetParent(importedBuildings.transform);
+			SetSizeOfModel(temp);
+			controlManager.SetNormalScale(temp.transform.localScale.x);
+			DeleteLevitation(temp);
+			for (int i = 0; i < importedBuildings.transform.childCount; i++)
+			{
+				if (importedBuildings.transform.GetChild(i).gameObject == temp)
+				{
+					dataManager.LoadBuildingState(i);
+					break;
+				}
+			}
 		}
 
 		// Import model using file browser

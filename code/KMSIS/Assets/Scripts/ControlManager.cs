@@ -463,11 +463,19 @@ public class ControlManager : MonoBehaviour
         if (cameraZoom.transform.GetChild(1).GetComponent<CameraButton>().buttonPressed)
         {
             mainCamera.GetComponent<Camera>().fieldOfView -= 0.2f;
+            if (mainCamera.GetComponent<Camera>().fieldOfView < 10f)
+            {
+                mainCamera.GetComponent<Camera>().fieldOfView = 10f;
+            }
             cameraZoom.transform.GetChild(0).GetChild(0).GetComponent<Slider>().value = 70f - mainCamera.GetComponent<Camera>().fieldOfView;
         }
         else if (cameraZoom.transform.GetChild(2).GetComponent<CameraButton>().buttonPressed)
         {
             mainCamera.GetComponent<Camera>().fieldOfView += 0.2f;
+            if (mainCamera.GetComponent<Camera>().fieldOfView > 70f)
+            {
+                mainCamera.GetComponent<Camera>().fieldOfView = 70f;
+            }
             cameraZoom.transform.GetChild(0).GetChild(0).GetComponent<Slider>().value = 70f - mainCamera.GetComponent<Camera>().fieldOfView;
         }
     }

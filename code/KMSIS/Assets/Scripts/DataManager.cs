@@ -24,8 +24,8 @@ public class DataManager : MonoBehaviour
     private GameObject importedBuildings;
 
     // SaveFile setting
-    private string directory1 = "/SaveFile"; // window - C:/Users/Username/AppData/LocalLow/DefaultCompony/KMSIS/SaveFile/data.save
-    private string directory2 = "/SaveFile/Buildings";
+    public string directory1 = "/SaveFile"; // window - C:/Users/Username/AppData/LocalLow/DefaultCompony/KMSIS/SaveFile/data.save
+    public string directory2 = "/SaveFile/Buildings";
     private string filename1 = "/userdata.save";
     private string filename2 = "/record.save";
     private List<Building> importedBuildingsList;
@@ -346,7 +346,11 @@ public class DataManager : MonoBehaviour
         {
             GameObject tempObject = importedBuildings.transform.GetChild(i).gameObject;
             string result = SearchFile(tempObject.name);
-            if (result == "null") continue;
+            if (result == null)
+            {
+                Debug.Log("Pass");
+                continue;
+            }
             else
             {
                 Building temp = new Building();
@@ -378,7 +382,17 @@ public class DataManager : MonoBehaviour
         importedBuildingsList = userData.GetImportedBuildingsList();
         for (int i = 0; i < importedBuildingsList.Count; i++)
         {
-            importManager.ImportFromPath(Application.persistentDataPath + directory2 + "/" + importedBuildingsList[i].GetName());
+            if (CheckPrefab(importedBuildingsList[i].GetName()))
+            {
+                if (int.TryParse(importedBuildingsList[i].GetName().Substring(0, 1), out int index))
+                {
+                    importManager.ImportSavedPrefab(index);
+                }
+            }
+            else
+            {
+                importManager.ImportFromPath(Application.persistentDataPath + directory2 + "/" + importedBuildingsList[i].GetName());
+            }
             Thread.Sleep(500);
         }
         for (int i = 0; i < buildings.transform.childCount; i++)
@@ -389,6 +403,12 @@ public class DataManager : MonoBehaviour
                 buildings.transform.GetChild(i).gameObject.SetActive(false);
             }
         }
+    }
+
+    // Check whether the file is prefab
+    private bool CheckPrefab(string fileName)
+    {
+        return (fileName.Substring(fileName.Length - 7, 7) == ".prefab");
     }
 
     [Serializable]
@@ -565,13 +585,13 @@ public class DataManager : MonoBehaviour
         {
             return fileName + ".fbx";
         }
-        else if (File.Exists(Application.persistentDataPath + directory2 + "/" + fileName + ".obj"))
+        else if (File.Exists(Application.persistentDataPath + directory2 + "/" + fileName + ".prefab"))
         {
-            return fileName + ".obj";
+            return fileName + ".prefab";
         }
         else
         {
-            return "null";
+            return null;
         }
     }
 }
