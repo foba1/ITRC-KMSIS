@@ -108,12 +108,6 @@ namespace TriLibCore.Samples
 			else return false;
 		}
 
-		// Save prefab file
-		public void SavePrefabFile(string fileName, int index)
-		{
-
-		}
-
 		// Import model using path
 		public void ImportFromPath(string path)
         {
