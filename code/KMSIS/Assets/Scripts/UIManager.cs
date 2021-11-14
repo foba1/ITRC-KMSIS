@@ -436,49 +436,21 @@ public class UIManager : MonoBehaviour
             TurnOnUI(7);
             analysisPanel.transform.GetChild(0).GetComponent<Text>().text = startYear + "년 " + startMonth + "월 " + startDay + "일 " + startHour + ":" + startMinute;
             analysisPanel.transform.GetChild(1).GetComponent<Text>().text = endYear + "년 " + endMonth + "월 " + endDay + "일 " + endHour + ":" + endMinute;
-            if (result[0] / 60 > 0)
+            if (result[0] / 60 == 0)
             {
-                if (result[0] % 60 < 10)
-                {
-                    analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text = result[0] / 60 + "시간 0" + result[0] % 60 + "분";
-                }
-                else
-                {
-                    analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text = result[0] / 60 + "시간 " + result[0] % 60 + "분";
-                }
+                analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text = result[0] % 60 + "분";
             }
             else
             {
-                if (result[0] % 60 < 10)
-                {
-                    analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text = "0" + result[0] % 60 + "분";
-                }
-                else
-                {
-                    analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text = result[0] % 60 + "분";
-                }
+                analysisPanel.transform.GetChild(4).GetChild(1).GetComponent<Text>().text = result[0] / 60 + "시간 " + result[0] % 60 + "분";
             }
-            if (result[1] / 60 > 0)
+            if (result[1] / 60 == 0)
             {
-                if (result[0] % 60 < 10)
-                {
-                    analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text = result[1] / 60 + "시간 0" + result[1] % 60 + "분";
-                }
-                else
-                {
-                    analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text = result[1] / 60 + "시간 " + result[1] % 60 + "분";
-                }
+                analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text = result[1] % 60 + "분";
             }
             else
             {
-                if (result[0] % 60 < 10)
-                {
-                    analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text = "0" + result[1] % 60 + "분";
-                }
-                else
-                {
-                    analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text = result[1] % 60 + "분";
-                }
+                analysisPanel.transform.GetChild(5).GetChild(1).GetComponent<Text>().text = result[1] / 60 + "시간 " + result[1] % 60 + "분";
             }
         }
         TurnOffUI(8);
@@ -492,9 +464,23 @@ public class UIManager : MonoBehaviour
         if (result != null)
         {
             sunlightPanel.transform.GetChild(1).GetComponent<Text>().text = monthString + "월 " + dayString + "일 평균";
-            sunlightPanel.transform.GetChild(2).GetComponent<Text>().text = (result[0] / 60) + "시간 " + (result[0] % 60) + "분";
             sunlightPanel.transform.GetChild(5).GetComponent<Text>().text = monthString + "월 " + dayString + "일 최대";
-            sunlightPanel.transform.GetChild(6).GetComponent<Text>().text = (result[1] / 60) + "시간 " + (result[1] % 60) + "분";
+            if (result[0] / 60 == 0)
+            {
+                sunlightPanel.transform.GetChild(2).GetComponent<Text>().text = (result[0] % 60) + "분";
+            }
+            else
+            {
+                sunlightPanel.transform.GetChild(2).GetComponent<Text>().text = (result[0] / 60) + "시간 " + (result[0] % 60) + "분";
+            }
+            if (result[0] / 60 == 0)
+            {
+                sunlightPanel.transform.GetChild(6).GetComponent<Text>().text = (result[1] % 60) + "분";
+            }
+            else
+            {
+                sunlightPanel.transform.GetChild(6).GetComponent<Text>().text = (result[1] / 60) + "시간 " + (result[1] % 60) + "분";
+            }
         }
         else
         {
