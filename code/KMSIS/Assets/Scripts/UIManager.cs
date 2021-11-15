@@ -206,7 +206,7 @@ public class UIManager : MonoBehaviour
                     controlManager.SetMode(0);
                     TurnOffUI(-1);
                 }
-                else
+                else if (controlManager.mode == 0)
                 {
                     TurnOffUI(-1);
                     TurnOnUI(8);
@@ -243,19 +243,22 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 3)
         {
-            TurnOffUI(-1);
-            controlManager.SetMode(3);
-            importPreviewPanel.SetActive(true);
-            iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(false);
-            iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);
-            iconPanel.transform.GetChild(1).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
-            if (previewMode)
+            if (controlManager.mode == 0)
             {
-                ShowAlbum();
-            }
-            else
-            {
-                ShowList();
+                TurnOffUI(-1);
+                controlManager.SetMode(3);
+                importPreviewPanel.SetActive(true);
+                iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(false);
+                iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);
+                iconPanel.transform.GetChild(1).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
+                if (previewMode)
+                {
+                    ShowAlbum();
+                }
+                else
+                {
+                    ShowList();
+                }
             }
         }
         else if (index == 4)
@@ -268,13 +271,16 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 5)
         {
-            TurnOffUI(-1);
-            controlManager.SetMode(3);
-            savedRecordPanel.SetActive(true);
-            iconPanel.transform.GetChild(3).GetChild(1).gameObject.SetActive(false);
-            iconPanel.transform.GetChild(3).GetChild(2).gameObject.SetActive(true);
-            iconPanel.transform.GetChild(3).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
-            ShowRecord();
+            if (controlManager.mode == 0)
+            {
+                TurnOffUI(-1);
+                controlManager.SetMode(3);
+                savedRecordPanel.SetActive(true);
+                iconPanel.transform.GetChild(3).GetChild(1).gameObject.SetActive(false);
+                iconPanel.transform.GetChild(3).GetChild(2).gameObject.SetActive(true);
+                iconPanel.transform.GetChild(3).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
+                ShowRecord();
+            }
         }
         else if (index == 6)
         {
@@ -294,6 +300,20 @@ public class UIManager : MonoBehaviour
             int value = Random.Range(0, adSprite.Length);
             advertisementPanel.transform.GetChild(0).GetChild(1).GetComponent<Image>().sprite = adSprite[value];
         }
+    }
+
+    // Back to the customPanel
+    public void BackToCustomPanel()
+    {
+        analysisPanel.SetActive(false);
+        customPanel.SetActive(true);
+    }
+
+    // Cancel analysis
+    public void CancelAnalysis()
+    {
+        TurnOffUI(8);
+        analysisManager.CancelAnalysis();
     }
 
     // Search with recent

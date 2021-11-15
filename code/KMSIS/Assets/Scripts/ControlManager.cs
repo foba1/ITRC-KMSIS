@@ -37,7 +37,7 @@ public class ControlManager : MonoBehaviour
     public GameObject cameraZoom;
 
     // Local variable and setting
-    private int mode; // -1 : unable, 0 : main, 1 : importing, 2 : analysis
+    public int mode; // -1 : unable, 0 : main, 1 : importing, 2 : analysis
     private bool analysisMode; // false : drawing mode, true : drag mode
     private bool areaSetMode;
     private Vector3 clickPosition;
@@ -151,6 +151,12 @@ public class ControlManager : MonoBehaviour
             if (Input.GetKeyUp(KeyCode.V))
             {
                 dataManager.Save();
+            }
+
+            if (Input.GetKeyUp(KeyCode.Return))
+            {
+                uiManager.Search();
+                uiManager.UpdateRecentPanel();
             }
 
             if (Input.GetMouseButtonDown(0)) // When left click is start

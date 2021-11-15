@@ -38,6 +38,7 @@ public class AnalysisManager : MonoBehaviour
     private int[] result;
     private int max, average, currentDay;
     private int startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute;
+    private bool cancel;
 
     void Start()
     {
@@ -61,9 +62,16 @@ public class AnalysisManager : MonoBehaviour
         return pointList.Count != 0;
     }
 
+    // Cancel analysis
+    public void CancelAnalysis()
+    {
+        cancel = true;
+    }
+
     // Initialize AnalysisManager
     public void Init(GameObject building)
     {
+        cancel = false;
         targetBuilding = building;
         building.GetComponent<MeshRenderer>().material = pointMaterial;
         List<RaycastHit> hitPointList = rayManager.GetPointOnObject(building);
@@ -130,6 +138,12 @@ public class AnalysisManager : MonoBehaviour
     {
         for (float clock = (float)timeInfo[2]; clock < (float)timeInfo[3]; clock += 24f / 1440f)
         {
+            if (cancel)
+            {
+                cancel = false;
+                Release();
+                yield break;
+            }
             List<double> tempList = sunManager.Calculate(month, day, clock);
             for (int i = 0; i < pointList.Count; i++)
             {
@@ -232,6 +246,11 @@ public class AnalysisManager : MonoBehaviour
 
                     for (; clock < endClock; clock += 24f / 1440f)
                     {
+                        if (cancel)
+                        {
+                            cancel = false;
+                            yield break;
+                        }
                         List<double> sunInfo = sunManager.Calculate(month, day, clock);
                         for (int i = 0; i < optimizedPointList.Count; i++)
                         {
