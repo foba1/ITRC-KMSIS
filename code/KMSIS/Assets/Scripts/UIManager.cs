@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     public GameObject infoPanel;
     public GameObject sunlightPanel;
     public GameObject customPanel;
+    public GameObject areaSetPanel;
     public GameObject analysisPanel;
     public GameObject periodPanel;
     public GameObject importPanel;
@@ -148,7 +149,7 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 3)
         {
-            controlManager.SetMode(0);
+            controlManager.SetMode(1);
             importPreviewPanel.SetActive(false);
             iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(true);
             iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
@@ -524,8 +525,16 @@ public class UIManager : MonoBehaviour
     // Update area set mode
     public void UpdateAreaSetMode()
     {
-        if (customPanel.transform.GetChild(1).GetChild(2).gameObject.activeSelf) customPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
-        else customPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);
+        if (customPanel.activeSelf)
+        {
+            customPanel.SetActive(false);
+            areaSetPanel.SetActive(true);
+        }
+        else
+        {
+            customPanel.SetActive(true);
+            areaSetPanel.SetActive(false);
+        }
     }
 
     // Save record of sunlight

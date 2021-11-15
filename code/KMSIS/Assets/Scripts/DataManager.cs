@@ -18,13 +18,14 @@ public class DataManager : MonoBehaviour
     // Manager component
     private ImportManager importManager;
     private BuildingManager buildingManager;
+    private UIManager uiManager;
 
     // GameObject component
     private GameObject buildings;
     private GameObject importedBuildings;
 
     // SaveFile setting
-    public string directory1 = "/SaveFile"; // window - C:/Users/Username/AppData/LocalLow/DefaultCompony/KMSIS/SaveFile/data.save
+    public string directory1 = "/SaveFile"; // window - C:/Users/Username/AppData/LocalLow/ITRC/KMSIS/SaveFile/data.save
     public string directory2 = "/SaveFile/Buildings";
     private string filename1 = "/userdata.save";
     private string filename2 = "/record.save";
@@ -72,10 +73,13 @@ public class DataManager : MonoBehaviour
         // Get Manager component
         importManager = GameObject.Find("ImportManager").GetComponent<ImportManager>();
         buildingManager = GameObject.Find("BuildingManager").GetComponent<BuildingManager>();
+        uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
 
         // Get GameObject component
         buildings = GameObject.Find("Buildings");
         importedBuildings = GameObject.Find("ImportedBuildings");
+
+        extraData = new ExtraData();
 
         // Load savefile
         Load();
@@ -166,7 +170,6 @@ public class DataManager : MonoBehaviour
         binaryFormatter.Serialize(fileStream, userData);
         fileStream.Close();
         fileStream = new FileStream(Application.persistentDataPath + directory1 + filename2, FileMode.Create);
-        if (extraData == null) extraData = new ExtraData();
         binaryFormatter.Serialize(fileStream, extraData);
         fileStream.Close();
     }
@@ -199,6 +202,10 @@ public class DataManager : MonoBehaviour
             }
             Camera.main.transform.position = new Vector3(0.5806503f, 1.184541f, 4.311463f);
             Camera.main.transform.eulerAngles = new Vector3(16.365f, 161.884f, 0f);
+            extraData.AddSearchRecord("ITRC");
+            extraData.AddSearchRecord("KMSIS");
+            extraData.AddSearchRecord("CAU");
+            uiManager.UpdateRecentPanel();
             Save();
             Load();
         }

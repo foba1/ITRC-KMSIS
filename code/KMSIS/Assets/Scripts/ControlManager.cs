@@ -507,6 +507,12 @@ public class ControlManager : MonoBehaviour
         }
     }
 
+    // Init selection
+    public void InitSelection()
+    {
+        analysisManager.ClearSelectedObjectList();
+    }
+
     // Update areaSetMode
     public void UpdateAreaSetMode()
     {

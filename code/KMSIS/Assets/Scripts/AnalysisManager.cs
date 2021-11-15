@@ -11,6 +11,7 @@ public class AnalysisManager : MonoBehaviour
     private RayManager rayManager;
     private SunManager sunManager;
     private UIManager uiManager;
+    private ControlManager controlManager;
 
     // GameObject component
     private GameObject pointPrefab;
@@ -46,6 +47,7 @@ public class AnalysisManager : MonoBehaviour
         rayManager = GameObject.Find("RayManager").GetComponent<RayManager>();
         sunManager = GameObject.Find("SunManager").GetComponent<SunManager>();
         uiManager = GameObject.Find("UIManager").GetComponent<UIManager>();
+        controlManager = GameObject.Find("ControlManager").GetComponent<ControlManager>();
 
         // Get gameObject component
         pointPrefab = GameObject.Find("PointPrefab");
@@ -142,6 +144,7 @@ public class AnalysisManager : MonoBehaviour
             {
                 cancel = false;
                 Release();
+                controlManager.SetMode(0);
                 yield break;
             }
             List<double> tempList = sunManager.Calculate(month, day, clock);
