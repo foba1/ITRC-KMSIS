@@ -115,6 +115,7 @@ public class UIManager : MonoBehaviour
             infoPanel.SetActive(false);
             sunlightPanel.SetActive(false);
             customPanel.SetActive(false);
+            areaSetPanel.SetActive(false);
             periodPanel.SetActive(false);
             analysisPanel.SetActive(false);
             importPreviewPanel.SetActive(false);
@@ -149,7 +150,6 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 3)
         {
-            controlManager.SetMode(1);
             importPreviewPanel.SetActive(false);
             iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(true);
             iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(false);
@@ -264,7 +264,7 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 4)
         {
-            TurnOffUI(-1);
+            TurnOffUI(3);
             importPanel.SetActive(true);
             iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(false);
             iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);

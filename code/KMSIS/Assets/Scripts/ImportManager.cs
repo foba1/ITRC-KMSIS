@@ -142,9 +142,6 @@ namespace TriLibCore.Samples
 				}
 			}
 			uiManager.LoadInfo(temp);
-			FileInfo file = new FileInfo(Application.persistentDataPath + dataManager.directory2 + "/" + temp.name + ".prefab");
-			if (!file.Exists)
-				File.Copy(Application.dataPath + "/Model/" + index.ToString() + ".prefab", Application.persistentDataPath + dataManager.directory2 + "/" + temp.name + ".prefab");
 		}
 
 		// Import model which is saved in fiile
