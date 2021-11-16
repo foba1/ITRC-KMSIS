@@ -342,11 +342,6 @@ public class ControlManager : MonoBehaviour
                     }
                 }
             }
-
-            if (Input.GetKeyUp(KeyCode.Return)) // When get enter
-            {
-                ImportConfirm();
-            }
         }
         else if (mode == 2)
         {
@@ -523,14 +518,17 @@ public class ControlManager : MonoBehaviour
     // Import confirm
     public void ImportConfirm()
     {
-        if (importedBuildings.transform.childCount > 0 && importManager.CheckSizeOfModel(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject))
+        if (uiManager.CheckScale() && uiManager.CheckRotation())
         {
-            SetMode(0);
-            uiManager.TurnOffUI(-1);
-        }
-        else
-        {
-            Debug.Log("3D Model is too big.");
+            if (importedBuildings.transform.childCount > 0 && importManager.CheckSizeOfModel(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject))
+            {
+                SetMode(0);
+                uiManager.TurnOffUI(-1);
+            }
+            else
+            {
+                uiManager.UpdateAlertText(0);
+            }
         }
     }
 
@@ -539,8 +537,7 @@ public class ControlManager : MonoBehaviour
     {
         if (importedBuildings.transform.childCount > 0)
         {
-            buildingManager.GetDeletedBuildingsList().Add(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject);
-            importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject.SetActive(false);
+            GameObject.Destroy(importedBuildings.transform.GetChild(importedBuildings.transform.childCount - 1).gameObject);
             SetMode(0);
             uiManager.TurnOffUI(-1);
         }

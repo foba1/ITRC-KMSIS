@@ -187,6 +187,7 @@ public class DataManager : MonoBehaviour
             fileStream = new FileStream(Application.persistentDataPath + directory1 + filename2, FileMode.Open);
             extraData = binaryFormatter.Deserialize(fileStream) as ExtraData;
             fileStream.Close();
+            uiManager.UpdateRecentPanel();
         }
         else
         {

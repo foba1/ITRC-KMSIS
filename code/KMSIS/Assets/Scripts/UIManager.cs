@@ -176,7 +176,15 @@ public class UIManager : MonoBehaviour
         }
         else if (index == 6)
         {
-            periodPanel.SetActive(false);
+            if (CheckPeriod())
+            {
+                periodPanel.transform.GetChild(18).gameObject.SetActive(false);
+                periodPanel.SetActive(false);
+            }
+            else
+            {
+                periodPanel.transform.GetChild(18).gameObject.SetActive(true);
+            }
         }
         else if (index == 7)
         {
@@ -266,6 +274,7 @@ public class UIManager : MonoBehaviour
         {
             TurnOffUI(3);
             importPanel.SetActive(true);
+            UpdateAlertText(0);
             iconPanel.transform.GetChild(1).GetChild(1).gameObject.SetActive(false);
             iconPanel.transform.GetChild(1).GetChild(2).gameObject.SetActive(true);
             iconPanel.transform.GetChild(1).GetChild(0).GetComponent<Text>().color = new Color(249f / 255f, 199f / 255f, 0f, 255 / 255f);
@@ -287,6 +296,7 @@ public class UIManager : MonoBehaviour
         {
             TurnOffUI(2);
             periodPanel.SetActive(true);
+            periodPanel.transform.GetChild(18).gameObject.SetActive(false);
         }
         else if (index == 7)
         {
@@ -572,8 +582,11 @@ public class UIManager : MonoBehaviour
     // Calculate sunlight during the period which user set
     public void CalculateSunlight()
     {
-        TurnOnUI(8);
-        analysisManager.Analyze(startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
+        if (CheckPeriod() && analysisManager.GetSelectedObjectList().Count > 0)
+        {
+            TurnOnUI(8);
+            analysisManager.Analyze(startYear, startMonth, startDay, startHour, startMinute, endYear, endMonth, endDay, endHour, endMinute);
+        }
     }
 
     // Calculate interval of period
@@ -1032,22 +1045,69 @@ public class UIManager : MonoBehaviour
         else return null;
     }
 
+    // Update alert text in importPanel
+    public void UpdateAlertText(int index)
+    {
+        if (index == -1)
+        {
+            importPanel.transform.GetChild(20).gameObject.SetActive(false);
+        }
+        else if (index == 0)
+        {
+            importPanel.transform.GetChild(20).gameObject.SetActive(true);
+            importPanel.transform.GetChild(20).GetComponent<Text>().text = "※제한 크기를 초과하였습니다.";
+        }
+        else if (index == 1)
+        {
+            importPanel.transform.GetChild(20).gameObject.SetActive(true);
+            importPanel.transform.GetChild(20).GetComponent<Text>().text = "※입력 값이 올바르지 않습니다.";
+        }
+    }
+
+    // Check Scale value
+    public bool CheckScale()
+    {
+        if (scaleInput[0].text == "" || scaleInput[1].text == "" || scaleInput[2].text == "") return false;
+        else if (float.TryParse(scaleInput[0].text, out float x) && float.TryParse(scaleInput[1].text, out float y) && float.TryParse(scaleInput[2].text, out float z))
+        {
+            if (x > 0 && y > 0 && z > 0) return true;
+            else return false;
+        }
+        else return false;
+    }
+
+    // Check Rotation value
+    public bool CheckRotation()
+    {
+        if (rotationInput[0].text == "" || rotationInput[1].text == "" || rotationInput[2].text == "") return false;
+        else if (float.TryParse(rotationInput[0].text, out float x) && float.TryParse(rotationInput[1].text, out float y) && float.TryParse(rotationInput[2].text, out float z))
+        {
+            if (x >= 0 && x < 360 && y >= 0 && y < 360 && z >= 0 && z < 360) return true;
+            else return false;
+        }
+        else return false;
+    }
+
     // Set scale of imported building
     public void SetScale()
     {
-        if (float.TryParse(scaleInput[0].text, out float x) && float.TryParse(scaleInput[1].text, out float y) && float.TryParse(scaleInput[2].text, out float z))
+        if (CheckScale() && float.TryParse(scaleInput[0].text, out float x) && float.TryParse(scaleInput[1].text, out float y) && float.TryParse(scaleInput[2].text, out float z))
         {
             controlManager.SetScale(x, y, z);
+            UpdateAlertText(-1);
         }
+        else UpdateAlertText(1);
     }
 
     // Set rotation of imported building
     public void SetRotation()
     {
-        if (float.TryParse(rotationInput[0].text, out float x) && float.TryParse(rotationInput[1].text, out float y) && float.TryParse(rotationInput[2].text, out float z))
+        if (CheckRotation() && float.TryParse(rotationInput[0].text, out float x) && float.TryParse(rotationInput[1].text, out float y) && float.TryParse(rotationInput[2].text, out float z))
         {
             controlManager.SetRotation(x, y, z);
+            UpdateAlertText(-1);
         }
+        else UpdateAlertText(1);
     }
 
     // Set the position of sun according to the text in UI
