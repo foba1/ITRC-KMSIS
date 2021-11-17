@@ -499,19 +499,19 @@ public class ControlManager : MonoBehaviour
     // Rotate camera
     public void RotateCamera()
     {
-        if (cameraRotate.transform.GetChild(1).GetComponent<CameraButton>().buttonPressed)
+        if (cameraRotate.transform.GetChild(0).GetComponent<CameraButton>().buttonPressed)
         {
             mainCamera.transform.eulerAngles += 0.5f * new Vector3(-1, 0, 0);
         }
-        else if (cameraRotate.transform.GetChild(2).GetComponent<CameraButton>().buttonPressed)
+        else if (cameraRotate.transform.GetChild(1).GetComponent<CameraButton>().buttonPressed)
         {
             mainCamera.transform.eulerAngles += 0.5f * new Vector3(1, 0, 0);
         }
-        else if (cameraRotate.transform.GetChild(3).GetComponent<CameraButton>().buttonPressed)
+        else if (cameraRotate.transform.GetChild(2).GetComponent<CameraButton>().buttonPressed)
         {
             mainCamera.transform.eulerAngles += 0.5f * new Vector3(0, -1, 0);
         }
-        else if (cameraRotate.transform.GetChild(4).GetComponent<CameraButton>().buttonPressed)
+        else if (cameraRotate.transform.GetChild(3).GetComponent<CameraButton>().buttonPressed)
         {
             mainCamera.transform.eulerAngles += 0.5f * new Vector3(0, 1, 0);
         }
