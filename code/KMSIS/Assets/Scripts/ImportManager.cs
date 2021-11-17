@@ -244,5 +244,10 @@ namespace TriLibCore.Samples
 				uiManager.TurnOffUI(-1);
 			}
 		}
+
+		public void RestoreCamera()
+        {
+			Camera.main.transform.eulerAngles = eulerAngles;
+		}
 	}
 }

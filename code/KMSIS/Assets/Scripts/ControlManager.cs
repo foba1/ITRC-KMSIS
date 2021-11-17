@@ -98,7 +98,18 @@ public class ControlManager : MonoBehaviour
             if (Input.GetMouseButton(1)) // When right click is continue
             {
                 // Update direction of camera
-                mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+                if (mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") >= 90.0f && mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") <= 200.0f)
+                {
+                    mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(0, Input.GetAxis("Mouse X"), 0);
+                }
+                else if (mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") <= 270.0f && mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") >= 200.0f)
+                {
+                    mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(0, Input.GetAxis("Mouse X"), 0);
+                }
+                else
+                {
+                    mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+                }
             }
 
             if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.R))
@@ -113,17 +124,9 @@ public class ControlManager : MonoBehaviour
 
             if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.Q))
             {
-                if (buildingManager.GetSelectedBuildingsList().Count < 1)
-                {
-                    Debug.Log("You should choose the building for analysis.");
-                }
-                else if (buildingManager.GetSelectedBuildingsList().Count == 1)
+                if (buildingManager.GetSelectedBuildingsList().Count == 1)
                 {
                     uiManager.TurnOnUI(1);
-                }
-                else
-                {
-                    Debug.Log("You can choose only one building.");
                 }
             }
 
@@ -148,7 +151,7 @@ public class ControlManager : MonoBehaviour
                 buildingManager.ChangeView();
             }
 
-            if (Input.GetKeyUp(KeyCode.V))
+            if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.S))
             {
                 dataManager.Save();
             }
@@ -365,7 +368,19 @@ public class ControlManager : MonoBehaviour
             if (Input.GetMouseButton(1)) // When right click is continue
             {
                 // Update direction of camera
-                mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+                // Update direction of camera
+                if (mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") >= 90.0f && mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") <= 200.0f)
+                {
+                    mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(0, Input.GetAxis("Mouse X"), 0);
+                }
+                else if (mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") <= 270.0f && mainCamera.transform.eulerAngles.x - Input.GetAxis("Mouse Y") >= 200.0f)
+                {
+                    mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(0, Input.GetAxis("Mouse X"), 0);
+                }
+                else
+                {
+                    mainCamera.transform.eulerAngles += rotateSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+                }
             }
 
             if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyUp(KeyCode.R))
@@ -524,6 +539,7 @@ public class ControlManager : MonoBehaviour
             {
                 SetMode(0);
                 uiManager.TurnOffUI(-1);
+                importManager.RestoreCamera();
             }
             else
             {
