@@ -102,7 +102,7 @@ public class UIManager : MonoBehaviour
     // Open help page
     public void OpenHelpPage()
     {
-        Application.OpenURL("https://github.com/foba1/ITRC-KMSIS");
+        Application.OpenURL("https://github.com/foba1/ITRC-KMSIS/tree/main/docs/help");
     }
 
     // UI index - infoPanel(0), sunlightPanel(1), customPanel(2), importPreviewPanel(3), importPanel(4), savedRecordPanel(5), periodPanel(6), analysisPanel(7), advertisementPanel(8)
