@@ -18,8 +18,11 @@ KMSIS는 3D 모델링을 이용한 일조량 예측 플랫폼이다. 수도권 �
 
 ![image](https://user-images.githubusercontent.com/51505940/125180638-35e1c800-e237-11eb-8705-dcfc41308b35.png)
 
+## 도움말
+[도움말](docs/help/README.md)
+
 ## Documentation
-[docs/README.md](docs/README.md)
+[Documentation](docs/README.md)
 
 ## Members
 팀장 : 송치원
