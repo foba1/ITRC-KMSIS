@@ -44,3 +44,21 @@ To check environment and estimate execution time, tests and records execution ti
 private List<GameObject> OptimizePoints(List<GameObject> pointList)
 ```
 If the size of `pointList` parameter is bigger than 200, executes an optimization algorithm and returns `optimizedPointList`.
+
+### InstantiateObject
+```cs
+public void InstantiateObject(List<RaycastHit> hitPointList)
+```
+Instantiates plane object on the surface of buildings. Plane objects are used to show selected surface-points.
+
+### DestroyObject
+```cs
+private List<GameObject> OptimizePoints(List<GameObject> pointList)
+```
+Destroys plane object on the surface of buildings.
+
+### Analyze
+```cs
+public void Analyze(int startYear, int startMonth, int startDay, int startHour, int startMinute, int endYear, int endMonth, int endDay, int endHour, int endMinute)
+```
+Analyzes the sunlight of the selected points during the period which user set. This is executed with coroutine to update progress information on the screen while in progress.
