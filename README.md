@@ -1,5 +1,6 @@
 # ITRC-KMSIS
 2021 ITRC 창의자율과제 공모작 - KMSIS (Korean Map of Spatial Information with Sunlight)
+![image](https://user-images.githubusercontent.com/51505940/146539671-f234351b-8843-40a6-bcd7-1061532561f6.png)
 
 ## ITRC 창의 자율 과제 공모
 기간 : 2021.06.28 ~ 2021.11.31
@@ -12,11 +13,6 @@
 
 ## Introduction
 KMSIS는 3D 모델링을 이용한 일조량 예측 플랫폼이다. 수도권 인구집중으로 건물 밀집도가 증가함에 따라 나타나는 일조권 문제를 해결하기 위해 기획하였으며, 국토의 공간 정보와 건물 데이터가 3D 모델링 되어있다. 사용자가 설정한 시간에 따라 광원의 위치가 변화하여 특정 시간대의 일조 상태를 시각화하고, 일조량과 관련된 여러 정보들을 계산할 수 있다. 특정 건물에 대한 정보를 검색할 수 있으며, 사용자의 3D 모델 파일을 불러오거나 자체 디자인 기능으로 모의 건물에 대한 일조량 변화를 예측할 수 있다.
-
-## Program Example
-이해를 돕기 위한 예시 사진입니다.
-
-![image](https://user-images.githubusercontent.com/51505940/125180638-35e1c800-e237-11eb-8705-dcfc41308b35.png)
 
 ## 도움말
 [도움말](docs/help/README.md)
