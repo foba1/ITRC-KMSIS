@@ -15,3 +15,20 @@ private List<GameObject> deletedBuildingsList;
 List of deleted buildings. The buildings included in `deletedBuildingsList` are not shown on the screen.
 
 ## Primary member functions
+### ChangeView
+```cs
+public void ChangeView()
+```
+Changes view mode.
+
+### SelectBuilding
+```cs
+public void SelectBuilding(GameObject building)
+```
+Selects building object and saves it in `selectedBuildingsList`.
+
+### DeleteFromSelectedBuildingsList
+```cs
+public void DeleteFromSelectedBuildingsList(int index)
+```
+Deletes building object from `selectedBuildingsList`.
