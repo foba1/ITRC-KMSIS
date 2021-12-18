@@ -1,7 +1,7 @@
 # AnalysisManager
 Manages all processes of analysis for the information of sunlight.
 
-## Primary Member variables
+## Primary member variables
 ### PointList
 ```cs
 private List<GameObject> pointList;
@@ -20,7 +20,7 @@ private List<GameObject> optimizedPointList;
 ```
 List of the optimized surface-point object of the building which is analyzed currently. If the size of `selectedPointList` is bigger than 200, an optimization algorithm is executed, selects part of `selectedPointList`, and saves them in `optimizedPointList`.
 
-## Primary Member functions
+## Primary member functions
 ### Init
 ```cs
 public void Init(GameObject building)
